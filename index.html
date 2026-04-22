@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sant Jordi</title>
+  <style>
+    :root {
+      --text: #7a1f2b;
+      --muted: #9f5a64;
+      --accent: #c62839;
+      --accent-dark: #9e1f2e;
+      --soft: rgba(198, 40, 57, 0.08);
+      --shadow: 0 26px 60px rgba(122, 31, 43, 0.18);
+      --ok: #2e7d32;
+      --error: #b3261e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,0.9) 0%, transparent 22%),
+        radial-gradient(circle at 80% 0%, rgba(255,255,255,0.65) 0%, transparent 20%),
+        linear-gradient(180deg, #fff7f8 0%, #fdecef 55%, #f9e0e5 100%);
+      color: var(--text);
+      padding: 12px;
+    }
+
+    .wrap {
+      width: min(100%, 420px);
+      margin: 0 auto;
+      min-height: calc(100vh - 24px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 28px;
+      padding: 22px 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.45), transparent 38%, transparent 70%, rgba(255,255,255,0.18));
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -90px;
+      right: -70px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(255,255,255,0.55) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    .title {
+      position: relative;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 1.9rem;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+    }
+
+    .subtitle {
+      position: relative;
+      text-align: justify;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+      font-size: 0.98rem;
+    }
+
+    .hidden { display: none !important; }
+
+    input {
+      width: 100%;
+      padding: 15px 16px;
+      font-size: 1.15rem;
+      text-align: center;
+      border: 1px solid rgba(122, 31, 43, 0.12);
+      border-radius: 16px;
+      outline: none;
+      margin-bottom: 12px;
+      background: rgba(255,255,255,0.92);
+      box-shadow: inset 0 1px 2px rgba(122,31,43,0.04);
+    }
+
+    input:focus {
+      border-color: rgba(198, 40, 57, 0.45);
+      box-shadow: 0 0 0 4px rgba(198, 40, 57, 0.08);
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    @keyframes pulseError {
+      0% { transform: scale(1); }
+      25% { transform: scale(1.06); }
+      50% { transform: scale(0.97); }
+      75% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes unlockPop {
+      0% { transform: scale(1) rotate(0deg); }
+      35% { transform: scale(1.12) rotate(-8deg); }
+      70% { transform: scale(1.04) rotate(8deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .pulse-error { animation: pulseError 0.4s ease; }
+    .unlocking { animation: unlockPop 0.9s ease; }
+
+    .primary {
+      width: 100%;
+      background: linear-gradient(180deg, #d23345, #b92537);
+      color: white;
+      box-shadow: 0 14px 26px rgba(198, 40, 57, 0.22);
+    }
+
+    .result {
+      margin-top: 14px;
+      min-height: 28px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .ok { color: var(--ok); }
+    .error { color: var(--error); }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--accent-dark);
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 380px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .rose-btn {
+      position: relative;
+      min-height: 180px;
+      width: 100%;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,247,248,0.92));
+      border: 1px solid rgba(255,255,255,0.72);
+      box-shadow: 0 16px 30px rgba(122, 31, 43, 0.10);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--text);
+      padding: 18px 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .rose-btn.locked { opacity: 0.9; }
+
+    .rose-icon {
+      font-size: 4.6rem;
+      line-height: 1;
+    }
+
+    .rose-time {
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .badge-lock {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 1rem;
+      background: var(--soft);
+      border-radius: 999px;
+      padding: 7px 9px;
+    }
+
+    .badge-num {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 0.85rem;
+      background: var(--soft);
+      color: var(--accent-dark);
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-weight: bold;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: transparent;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 20;
+    }
+
+    .overlay.show { display: flex; }
+
+    .overlay.clean {
+      padding: 18px;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.35) 22%, transparent 55%),
+        radial-gradient(circle at 15% 85%, rgba(255,220,230,0.45) 0%, transparent 28%),
+        radial-gradient(circle at 85% 85%, rgba(255,210,220,0.45) 0%, transparent 28%),
+        linear-gradient(180deg, #f6edef 0%, #f4e6ea 100%);
+    }
+
+    .modal {
+      width: min(100%, 360px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,250,251,0.95));
+      border-radius: 26px;
+      padding: 22px 18px;
+      text-align: center;
+      box-shadow: 0 28px 60px rgba(122, 31, 43, 0.22);
+      border: 1px solid rgba(255,255,255,0.72);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .overlay.clean .modal {
+      width: min(100%, 420px);
+      min-height: min(88vh, 760px);
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      max-height: none;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+    }
+
+    .rose-stage {
+      position: relative;
+      width: 230px;
+      height: 290px;
+      margin: 36px auto 10px;
+      display: grid;
+      place-items: center;
+    }
+
+    .magic-rose {
+      position: relative;
+      width: 220px;
+      height: 280px;
+      opacity: 0;
+      transform: translateY(16px) scale(0.92);
+      animation: revealRose 1.25s ease forwards;
+      filter: drop-shadow(0 16px 20px rgba(180, 28, 46, 0.18));
+    }
+
+    @keyframes revealRose {
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .rose-copy {
+      width: 100%;
+      max-width: 360px;
+      margin: 8px auto 0;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: textIn 0.9s ease forwards;
+      animation-delay: 1.15s;
+    }
+
+    .rose-copy h3 {
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+    }
+
+    .rose-copy p {
+      font-size: 1rem;
+      line-height: 1.45;
+      color: #1f1f1f;
+      margin-bottom: 0;
+    }
+
+    .rose-sign {
+      margin-top: 22px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      font-size: 1.05rem;
+      color: #000;
+    }
+
+    @keyframes textIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-actions {
+      width: 100%;
+      margin-top: 26px;
+      padding-bottom: 18px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .modal-actions button {
+      background: #cf2538;
+      color: white;
+      min-width: 180px;
+      padding: 16px 28px;
+      font-size: 1rem;
+      box-shadow: none;
+    }
+
+    .countdown {
+      margin-top: 8px;
+      color: var(--accent-dark);
+      font-weight: bold;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section id="loginScreen" class="card">
+      <h1 class="title">🌹SANT JORDI🌹</h1>
+      <p class="subtitle">No te puedo enviar ni aparecer con ramo de rosas como me gustaría... por eso he preparado algo especial para mi persona favorita, y para uno de esos días marcados en el calendario para pasarlos juntos y de la mano... siempre. <br><br>Introduce cuatro número que significan mucho para nosotros... hoy no te lo pongo díficil 🤭</p>
+      <input id="codigo" type="password" inputmode="numeric" maxlength="4" placeholder="****" aria-label="Código de acceso" />
+      <button id="entrarBtn" class="primary" type="button"><span id="lockIcon">🔒</span></button>
+      <div id="loginResultado" class="result"></div>
+    </section>
+
+    <section id="gardenScreen" class="card hidden">
+      <div class="topbar">
+        <div>
+          <h2 style="margin-bottom:6px;">FELIZ SANT JORDI PEQUE 🌹</h2>
+          <div class="subtitle" style="text-align:justify; margin:0; font-size:0.9rem;">Aquí tu ramo de flores... este año de manera especial. <br><br>Cada rosa guarda algo especial... las irás descubriendo durante el día... las que se han descubierto ya, para que las mires cuando quieras y te hagan sonreír en un día tan especial.</div>
+        </div>
+        <div class="chip"><strong>TQARP 💖</strong></div>
+      </div>
+
+      <div id="roseGrid" class="grid"></div>
+    </section>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <div class="modal">
+      <div id="modalBodyDefault">
+        <h3 id="modalTitle">Rosa</h3>
+        <p id="modalText">Contenido de prueba.</p>
+        <div id="modalCountdown" class="countdown"></div>
+      </div>
+
+      <div id="modalBodyRoseAnimated" class="hidden">
+        <div class="rose-stage">
+          <div class="magic-rose" style="display:flex; align-items:center; justify-content:center; font-size:180px; animation: revealRose 1.2s ease forwards;">
+            🌹
+          </div>
+        </div>
+        <div class="rose-copy">
+          <h3 id="animatedRoseTitle">🌹</h3>
+          <p id="animatedRoseText">PRUEBA</p>
+          <div id="animatedRoseSign" class="rose-sign">PRUEBA</div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cerrarModal" type="button">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const accessCode = '0807';
+    const testMode = false;
+
+    // MODO TEST RÁPIDO
+    // true → todas las rosas se desbloquean progresivamente cada pocos segundos
+    const fastTestMode = false;
+    const fastIntervalSeconds = 5; // cada rosa se desbloquea cada X segundos
+    const fastStartTime = Date.now();
+
+    const rosas = [
+      { id: 1, nombre: 'Rosa 1', unlockTime: '06:30', tipo: 'animada', titulo: '🌹', mensaje: 'Feliz día de Sant Jordi! 🌹 Para que te despiertes, con el complemento que mejor te queda, tu sonrisa. Primera rosa de un ramo de Sant Jordi especial, como todo lo que hemos creado... te quiero a rabiar peque', firma: 'JYDLMS' },
+      { id: 2, nombre: 'Rosa 2', unlockTime: '08:07', tipo: 'animada', titulo: '🌹🌹', mensaje: 'Porque combinar nuestros números especiales ha hecho que el junte de ambos sea la idea más bonita del mundo. Y todo sin quererlo, todo por aparecer después de tu primer día de baile, y que un pistachín cogiese dos números al azar. Te quiero y quiero todo lo especial que tiene tenerte a mi lado.', firma: '0807' },
+      { id: 3, nombre: 'Rosa 3', unlockTime: '11:11', tipo: 'animada', titulo: '🌹🌹🌹', mensaje: 'Las señales solo hacen que me fije y me centre en lo maravilloso que tengo delante. Lo increíble que es tenerte al lado y sentir lo bonito que me quieres cada día. Porque elegirte cada día, es y será, la mejor elección de mi vida. Te quiero todo lo bonito y sincero que sé.', firma: '11:11' },
+      { id: 4, nombre: 'Rosa 4', unlockTime: '13:30', tipo: 'animada', titulo: '🌹🌹🌹🌹', mensaje: 'Para que después de una mañana tan bonita, le pongas un poco de color a la comida. Porque solo pensar en ponerme a cocinar contigo y disfrutarte cada segundo, me saca una sonrisa. Esa sonrisa que me sacas solo con estar a mi lado. Quererte es el mayor regalo de la vida.', firma: 'TAQRP' },
+      { id: 5, nombre: 'Rosa 5', unlockTime: '16:30', tipo: 'animada', titulo: '🌹🌹🌹🌹🌹', mensaje: 'Gracias por regalarme tu sonrisa cada día. No puedo ser más feliz cuando te escucho reír y sonreír. Porque en los días malos, hacerte sonreír es un privilegio que muy pocos tienen... y soy uno de esos afortunados. Te quiero a ti, con todo y tal y como eres, maravillosa.', firma: '1+1=11' },
+      { id: 6, nombre: 'Rosa 6', unlockTime: '17:45', tipo: 'animada', titulo: '🌹🌹🌹🌹🌹🌹', mensaje: 'Las personas especiales hacen sentir cosas especiales. Todo lo que siento por ti es maravilloso y muy especial. Muchas gracias por darme la confianza para poder expresar que te quiero de esta manera. Porque no hay mejor forma de querer, que mostrándote al máximo lo que significas para mí. Te quiero mi persona especial.', firma: '💖💖💖💖' },
+      { id: 7, nombre: 'Rosa 7', unlockTime: '20:45', tipo: 'animada', titulo: '🌹🌹🌹🌹🌹🌹🌹', mensaje: 'Mi pequeña princesa. Todo lo que hemos creado es maravilloso... y tan especial. Estoy muy orgulloso de quien eres... y en quien te quieres convertir. Se va notando cada paso que das, ahora solo te queda desbloquear. Gracias por hacerme partícipe de tu vida. Aunque sea de esta manera... pero más adelante de otra. Pero sobre todo gracias por quererme tan bonito. Por enseñarme a querer de manera incondicional, y por dejarme ver a esa increíble persona que se escondía detrás de la borde de la oficina. Te quiero y te querré siempre mi pequeña.', firma: 'TQARP' },
+      { id: 8, nombre: 'Rosa 8', unlockTime: '22:50', tipo: 'animada', titulo: '🌹🌹🌹🌹🌹🌹🌹🌹', mensaje: 'Para mi todo. Para mi persona favorita. Para mi borde la oficina. Para esa persona que miro a los ojos y sé perfectamente con quién quiero estar. Con quién quiero perderme. Con quién quiero despertarme cada mañana. Porque al final la vida son sensaciones y vivencias... y por todo eso sé, que estar contigo y poder cogerte de la mano, solo me va a traer cosas bonitas. Porque mi camino planeado tiene una parada muy bonita que eres tú. Esa parada donde quiero mirarte, cogerte de la mano, y que me acompañes a seguir por el camino que me tiene planeado la vida. Pero ya no solo, sino de tu mano.', firma: 'JYDLMS' }
+    ];
+
+    const loginScreen = document.getElementById('loginScreen');
+    const gardenScreen = document.getElementById('gardenScreen');
+    const codigoInput = document.getElementById('codigo');
+    const entrarBtn = document.getElementById('entrarBtn');
+    const loginResultado = document.getElementById('loginResultado');
+    const lockIcon = document.getElementById('lockIcon');
+    const roseGrid = document.getElementById('roseGrid');
+    const overlay = document.getElementById('overlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalText = document.getElementById('modalText');
+    const modalCountdown = document.getElementById('modalCountdown');
+    const modalBodyDefault = document.getElementById('modalBodyDefault');
+    const modalBodyRoseAnimated = document.getElementById('modalBodyRoseAnimated');
+    const animatedRoseTitle = document.getElementById('animatedRoseTitle');
+    const animatedRoseText = document.getElementById('animatedRoseText');
+    const animatedRoseSign = document.getElementById('animatedRoseSign');
+    const cerrarModal = document.getElementById('cerrarModal');
+    let modalInterval = null;
+
+    function getNow() {
+      return new Date();
+    }
+
+    function getTargetUnlockDate(rosa) {
+      const now = getNow();
+      let targetDay = 23;
+      let targetMonth = 3; // abril
+
+      if (rosa.customDate) {
+        targetDay = rosa.customDate.day;
+        targetMonth = rosa.customDate.month;
+      }
+
+      const [hours, minutes] = (rosa.unlockTime || '00:00').split(':').map(Number);
+      return new Date(now.getFullYear(), targetMonth, targetDay, hours, minutes, 0, 0);
+    }
+
+    function formatCountdown(ms) {
+      if (ms <= 0) return '00:00:00';
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(totalSeconds % 60).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function isUnlocked(rosa) {
+      if (testMode) return true;
+
+      if (fastTestMode) {
+        const index = rosas.findIndex(r => r.id === rosa.id);
+        const unlockMs = fastStartTime + (index * fastIntervalSeconds * 1000);
+        return Date.now() >= unlockMs;
+      }
+
+      return getNow() >= getTargetUnlockDate(rosa);
+    }
+
+    function renderRosas() {
+      roseGrid.innerHTML = '';
+
+      rosas.forEach((rosa) => {
+        const unlocked = isUnlocked(rosa);
+        const remaining = fastTestMode
+          ? ((fastStartTime + (rosas.findIndex(r => r.id === rosa.id) * fastIntervalSeconds * 1000)) - Date.now())
+          : (getTargetUnlockDate(rosa) - getNow());
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `rose-btn ${unlocked ? '' : 'locked'}`;
+        button.innerHTML = `
+          ${unlocked ? '' : '<span class="badge-lock">🔒</span>'}
+          <span class="badge-num">${unlocked ? rosa.id : '?'}</span>
+          <div class="rose-icon" style="${unlocked ? '' : 'filter: grayscale(1) brightness(0.7);'}">🌹</div>
+          <div class="rose-time">${unlocked ? '' : '⏳ ' + formatCountdown(remaining)}</div>
+        `;
+
+        button.addEventListener('click', () => openRose(rosa));
+        roseGrid.appendChild(button);
+      });
+    }
+
+    function clearModalTimer() {
+      if (modalInterval) {
+        clearInterval(modalInterval);
+        modalInterval = null;
+      }
+    }
+
+    function closeOverlay() {
+      clearModalTimer();
+      overlay.classList.remove('show');
+      overlay.classList.remove('clean');
+    }
+
+    function resetModalActions() {
+      cerrarModal.textContent = 'Cerrar';
+      cerrarModal.onclick = closeOverlay;
+    }
+
+    function showModal(title, text, countdownText = '') {
+      overlay.classList.remove('clean');
+      modalBodyRoseAnimated.classList.add('hidden');
+      modalBodyDefault.classList.remove('hidden');
+      modalTitle.textContent = title;
+      modalText.textContent = text;
+      modalCountdown.textContent = countdownText;
+      resetModalActions();
+      overlay.classList.add('show');
+    }
+
+    function showAnimatedRoseModal(rosa) {
+      overlay.classList.add('clean');
+      modalBodyDefault.classList.add('hidden');
+      modalBodyRoseAnimated.classList.remove('hidden');
+      modalCountdown.textContent = '';
+      animatedRoseTitle.textContent = rosa.titulo || '🌹';
+      animatedRoseText.textContent = rosa.mensaje || '';
+      animatedRoseSign.textContent = rosa.firma || '';
+      resetModalActions();
+      overlay.classList.add('show');
+    }
+
+    function openRose(rosa) {
+      const unlocked = isUnlocked(rosa);
+      clearModalTimer();
+
+      if (!unlocked) {
+        const updateLockedModal = () => {
+          const remaining = fastTestMode
+          ? ((fastStartTime + (rosas.findIndex(r => r.id === rosa.id) * fastIntervalSeconds * 1000)) - Date.now())
+          : (getTargetUnlockDate(rosa) - getNow());
+          if (remaining <= 0) {
+            clearModalTimer();
+            renderRosas();
+            showModal(`Rosa ${rosa.id}`, 'Ya puedes abrirla 🌹');
+            return;
+          }
+          showModal('EH! 👀', 'Todavía no es el momento...', `Faltan ${formatCountdown(remaining)}`);
+        };
+
+        updateLockedModal();
+        modalInterval = setInterval(updateLockedModal, 1000);
+        return;
+      }
+
+      showAnimatedRoseModal(rosa);
+    }
+
+    entrarBtn.addEventListener('click', () => {
+      if (codigoInput.value.trim() === accessCode) {
+        lockIcon.textContent = '🔓';
+        entrarBtn.classList.remove('pulse-error');
+        entrarBtn.classList.add('unlocking');
+        loginResultado.textContent = 'FELIZ SANT JORDI PEQUE 🌹';
+        loginResultado.className = 'result ok';
+        setTimeout(() => {
+          loginScreen.classList.add('hidden');
+          gardenScreen.classList.remove('hidden');
+          renderRosas();
+          entrarBtn.classList.remove('unlocking');
+        }, 950);
+      } else {
+        lockIcon.textContent = '🔒';
+        entrarBtn.classList.remove('unlocking');
+        void entrarBtn.offsetWidth;
+        entrarBtn.classList.add('pulse-error');
+        loginResultado.textContent = 'NO ME CREO QUE HAYAS FALLADO... PONLO BIEN ANDA';
+        loginResultado.className = 'result error';
+      }
+    });
+
+    entrarBtn.addEventListener('animationend', () => {
+      entrarBtn.classList.remove('pulse-error');
+    });
+
+    codigoInput.addEventListener('input', () => {
+      if (lockIcon.textContent !== '🔒') {
+        lockIcon.textContent = '🔒';
+      }
+    });
+
+    codigoInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        entrarBtn.click();
+      }
+    });
+
+    resetModalActions();
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        closeOverlay();
+      }
+    });
+
+    setInterval(() => {
+      if (!gardenScreen.classList.contains('hidden')) {
+        renderRosas();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
